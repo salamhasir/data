@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>منصة تحديث بيانات المدارس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: #004e89;
+      color: white;
+      padding: 20px;
+      border-radius: 0 0 12px 12px;
+      text-align: center;
+    }
+
+    header h1, header h2, header h3 {
+      margin: 4px 0;
+    }
+
+    input, button, textarea {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #00a88f;
+      color: white;
+      font-weight: bold;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #007a6e;
+    }
+
+    .card {
+      background-color: white;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>الإدارة العامة للتعليم بمنطقة عسير</h1>
+    <h2>المساعد للخدمات</h2>
+    <h3>قسم الأمن والسلامة والمرافق</h3>
+  </header>
+
+  <div class="container">
+    <label for="schoolCode">الرقم الإحصائي للمدرسة</label>
+    <input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+    <button onclick="fetchData()">عرض البيانات</button>
+
+    <div id="result" class="card"></div>
+    <div id="dashboard" class="card hidden"></div>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbw1GlFNl2IVidd-FyogIpZOlTN5kiJIYf1X4SSG76NGSa59SCm42r4LzyeWR1kBfnTu/exec";
+
+    async function fetchData() {
+      const code = document.getElementById("schoolCode").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+      document.getElementById("dashboard").classList.add("hidden");
+
+      if (!code || isNaN(code)) {
+        resultDiv.innerHTML = "<p class='error'>الرجاء إدخال الرقم الإحصائي بشكل صحيح (أرقام فقط).</p>";
+        return;
+      }
+
+      resultDiv.innerHTML = "جاري التحميل...";
+
+      try {
+        const response = await fetch(`${scriptURL}?code=${code}`);
+        const data = await response.json();
+
+        if (data.success) {
+          let actions = "";
+          if (data.status) {
+            actions = `<p><strong>تم الإجراء مسبقًا:</strong> ${data.status} بتاريخ ${data.date || "-"}</p>`;
+          } else {
+            actions = `
+              <button onclick="submitConfirmation('${code}')">✅ تأكيد صحة البيانات</button>
+              <button onclick="showCorrection()">✏️ البيانات غير صحيحة</button>
+              <div id="correctionBox" class="hidden">
+                <textarea id="correctionText" rows="3" placeholder="اكتب الملاحظات أو التعديلات المقترحة..."></textarea>
+                <button onclick="submitCorrection('${code}')">إرسال التعديلات</button>
+              </div>`;
+          }
+
+          resultDiv.innerHTML = `
+            <h3>بيانات المدرسة</h3>
+            <p><strong>اسم المدرسة:</strong> ${data.name}</p>
+            <p><strong>اسم المدير/ة:</strong> ${data.principal}</p>
+            <p><strong>رقم الجوال:</strong> ${data.phone1}</p>
+            <p><strong>اسم المنسق/ة:</strong> ${data.coordinator}</p>
+            <p><strong>جوال المنسق/ة:</strong> ${data.phone2}</p>
+            ${actions}
+          `;
+        } else {
+          resultDiv.innerHTML = "<p class='error'>لم يتم العثور على مدرسة بهذا الرقم.</p>";
+        }
+      } catch (error) {
+        resultDiv.innerHTML = "<p class='error'>حدث خطأ أثناء جلب البيانات.</p>";
+        console.error(error);
+      }
+    }
+
+    function showCorrection() {
+      document.getElementById("correctionBox").classList.remove("hidden");
+    }
+
+    async function submitConfirmation(code) {
+      if (!confirm("هل أنت متأكد من أن جميع البيانات صحيحة؟")) return;
+      await sendPost(code, "تم التأكيد", "");
+      alert("✅ تم تأكيد البيانات بنجاح، شكرًا لتعاونك!");
+      fetchData();
+    }
+
+    async function submitCorrection(code) {
+      const notes = document.getElementById("correctionText").value.trim();
+      if (!notes) {
+        alert("يرجى كتابة الملاحظات قبل الإرسال.");
+        return;
+      }
+      if (!confirm("هل ترغب في إرسال هذه التعديلات؟")) return;
+      await sendPost(code, "بيانات غير صحيحة", notes);
+      alert("✏️ تم إرسال الملاحظات بنجاح، شكرًا لك!");
+      fetchData();
+    }
+
+    async function sendPost(code, status, notes) {
+      const now = new Date();
+      const date = now.toLocaleDateString('ar-EG');
+      const response = await fetch(scriptURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `code=${code}&status=${encodeURIComponent(status)}&notes=${encodeURIComponent(notes)}&date=${encodeURIComponent(date)}`
+      });
+      return await response.json();
+    }
+
+    window.addEventListener("DOMContentLoaded", loadDashboard);
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`${scriptURL}?action=stats`);
+        const stats = await response.json();
+
+        let sectorsHTML = "";
+        for (const sector in stats.sectors) {
+          sectorsHTML += `<li>${sector}: ${stats.sectors[sector]}</li>`;
+        }
+
+        const dashboard = document.getElementById("dashboard");
+        dashboard.innerHTML = `
+          <h3>📊 لوحة الإحصائيات</h3>
+          <p><strong>إجمالي المدارس:</strong> ${stats.total}</p>
+          <p><strong>المدارس التي أكدت:</strong> ${stats.confirmed}</p>
+          <p><strong>المدارس التي عدلت:</strong> ${stats.modified}</p>
+          <p><strong>المدارس التي لم ترد بعد:</strong> ${stats.pending}</p>
+          <h4>حسب القطاع:</h4>
+          <ul>${sectorsHTML}</ul>
+        `;
+        dashboard.classList.remove("hidden");
+      } catch (error) {
+        console.error("خطأ في تحميل الإحصائيات:", error);
+      }
+    }
+  </script>
+</body>
+</html>
