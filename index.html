@@ -105,8 +105,8 @@
     const scriptURL = "https://script.google.com/macros/s/AKfycbw1GlFNl2IVidd-FyogIpZOlTN5kiJIYf1X4SSG76NGSa59SCm42r4LzyeWR1kBfnTu/exec";
 
     async function fetchData() {
-      const codeRaw = document.getElementById("schoolCode").value.trim();
-      const code = codeRaw.replace(/[^0-9]/g, "");
+      const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
+      const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
       document.getElementById("dashboard").classList.add("hidden");
