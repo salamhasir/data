@@ -99,7 +99,8 @@
     <button id="resetButton" class="hidden" onclick="resetForm()">🔄 إدخال جديد</button>
 
     <div id="result" class="card"></div>
-    <button onclick="toggleDashboard()">📊 إظهار/إخفاء لوحة الإحصائيات</button>
+    <input id="adminCode" type="password" placeholder="أدخل الرقم السري للمسؤول">
+    <button onclick="checkAdminCode()">📊 عرض لوحة الإحصائيات</button>
     <div id="dashboard" class="card hidden"></div>
   </div>
 
@@ -198,8 +199,6 @@
       return await response.json();
     }
 
-    window.addEventListener("DOMContentLoaded", loadDashboard);
-
     async function loadDashboard() {
       try {
         const response = await fetch(`${scriptURL}?action=stats`);
@@ -222,6 +221,14 @@
           <h4>حسب القطاع:</h4>
           <ul>${sectorsHTML}</ul>
         `;
+        if (!document.getElementById("adminWelcome")) {
+  const welcome = document.createElement("p");
+  welcome.id = "adminWelcome";
+  welcome.className = "success";
+  welcome.style.cssText = "text-align: center; background-color: #e7f9ed; padding: 10px; border-radius: 8px; font-weight: bold;";
+  welcome.textContent = "😊 أهلاً بك يا مديري!";
+  dashboard.parentElement.insertBefore(welcome, dashboard);
+}
         dashboard.classList.remove("hidden");
       } catch (error) {
         console.error("خطأ في تحميل الإحصائيات:", error);
@@ -240,6 +247,15 @@
     function toggleDashboard() {
       const dash = document.getElementById("dashboard");
       dash.classList.toggle("hidden");
+    }
+
+    function checkAdminCode() {
+      const code = document.getElementById("adminCode").value.trim();
+      if (code === "20250") {
+        loadDashboard();
+      } else {
+        alert("❌ الرقم السري غير صحيح.");
+      }
     }
   </script>
 </body>
