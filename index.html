@@ -99,7 +99,8 @@
     <button id="resetButton" class="hidden" onclick="resetForm()">🔄 إدخال جديد</button>
 
     <div id="result" class="card"></div>
-    <div id="dashboard" class="card hidden"></div>
+    <button onclick="toggleDashboard()">📊 إظهار/إخفاء لوحة الإحصائيات</button>
+<div id="dashboard" class="card hidden"></div>
   </div>
 
   <script>
@@ -110,7 +111,7 @@
       const code = codeRaw;
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
-      document.getElementById("dashboard").classList.add("hidden");
+      // document.getElementById("dashboard").classList.add("hidden");
 
       if (!code || code.length < 5) {
         resultDiv.innerHTML = "<p class='error'>الرقم الإحصائي يبدو غير مكتمل. يرجى التحقق.</p>";
@@ -125,6 +126,9 @@
 
         if (data.success) {
           document.getElementById("resetButton").classList.remove("hidden");
+          const sector = data.sector;
+          const type = data.type;
+          const office = data.office;
           let banner = "";
           let actions = "";
           if (data.status) {
@@ -142,6 +146,9 @@
           resultDiv.innerHTML = `
             ${banner}
             <h3>بيانات المدرسة</h3>
+            <p><strong>القطاع:</strong> ${sector}</p>
+            <p><strong>النوع:</strong> ${type}</p>
+            <p><strong>المكتب:</strong> ${office}</p>
             <p><strong>اسم المدرسة:</strong> ${data.name}</p>
             <p><strong>اسم المدير/ة:</strong> ${data.principal}</p>
             <p><strong>رقم الجوال:</strong> ${data.phone1}</p>
@@ -223,6 +230,11 @@
   document.getElementById("schoolCode").value = "";
   document.getElementById("result").innerHTML = "";
   document.getElementById("dashboard").classList.add("hidden");
+}
+
+function toggleDashboard() {
+  const dash = document.getElementById("dashboard");
+  dash.classList.toggle("hidden");
 }
 
 </script>
