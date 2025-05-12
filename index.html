@@ -73,6 +73,16 @@
     .error {
       color: red;
     }
+
+    .status-banner {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -95,12 +105,13 @@
     const scriptURL = "https://script.google.com/macros/s/AKfycbw1GlFNl2IVidd-FyogIpZOlTN5kiJIYf1X4SSG76NGSa59SCm42r4LzyeWR1kBfnTu/exec";
 
     async function fetchData() {
-      const code = document.getElementById("schoolCode").value.trim();
+      const codeRaw = document.getElementById("schoolCode").value.trim();
+      const code = codeRaw.replace(/[^0-9]/g, "");
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
       document.getElementById("dashboard").classList.add("hidden");
 
-      if (!code || isNaN(code)) {
+      if (!code) {
         resultDiv.innerHTML = "<p class='error'>الرجاء إدخال الرقم الإحصائي بشكل صحيح (أرقام فقط).</p>";
         return;
       }
@@ -112,9 +123,10 @@
         const data = await response.json();
 
         if (data.success) {
+          let banner = "";
           let actions = "";
           if (data.status) {
-            actions = `<p><strong>تم الإجراء مسبقًا:</strong> ${data.status} بتاريخ ${data.date || "-"}</p>`;
+            banner = `<div class='status-banner'>تم الإجراء مسبقًا: ${data.status} بتاريخ ${data.date || "-"}</div>`;
           } else {
             actions = `
               <button onclick="submitConfirmation('${code}')">✅ تأكيد صحة البيانات</button>
@@ -126,6 +138,7 @@
           }
 
           resultDiv.innerHTML = `
+            ${banner}
             <h3>بيانات المدرسة</h3>
             <p><strong>اسم المدرسة:</strong> ${data.name}</p>
             <p><strong>اسم المدير/ة:</strong> ${data.principal}</p>
