@@ -94,24 +94,23 @@
 
   <div class="container">
     <label for="schoolCode">الرقم الإحصائي للمدرسة</label>
-<input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">
+    <input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">
     <button onclick="fetchData()">عرض البيانات</button>
     <button id="resetButton" class="hidden" onclick="resetForm()">🔄 إدخال جديد</button>
 
     <div id="result" class="card"></div>
     <button onclick="toggleDashboard()">📊 إظهار/إخفاء لوحة الإحصائيات</button>
-<div id="dashboard" class="card hidden"></div>
+    <div id="dashboard" class="card hidden"></div>
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycby0EavaTaabwWTXePnel845wvmKBwPihehKp825nJKPTACZgY6YVC70R7SVFbQOSH_f/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyEHr9r1KLWmf-vCShIlFU7N_q69ZFws0mTu_3AbY-l1IqJTOvwNQaL2m8IeagGpFgo/exec";
 
     async function fetchData() {
       const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
       const code = codeRaw;
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
-      // document.getElementById("dashboard").classList.add("hidden");
 
       if (!code || code.length < 5) {
         resultDiv.innerHTML = "<p class='error'>الرقم الإحصائي يبدو غير مكتمل. يرجى التحقق.</p>";
@@ -161,7 +160,7 @@
         }
       } catch (error) {
         resultDiv.innerHTML = "<p class='error'>حدث خطأ أثناء جلب البيانات.</p>";
-        console.error(error);
+        console.error("تفاصيل الخطأ:", error);
       }
     }
 
@@ -206,6 +205,8 @@
         const response = await fetch(`${scriptURL}?action=stats`);
         const stats = await response.json();
 
+        if (!stats || !stats.total) throw new Error("Invalid stats format");
+
         let sectorsHTML = "";
         for (const sector in stats.sectors) {
           sectorsHTML += `<li>${sector}: ${stats.sectors[sector]}</li>`;
@@ -224,19 +225,22 @@
         dashboard.classList.remove("hidden");
       } catch (error) {
         console.error("خطأ في تحميل الإحصائيات:", error);
+        const dashboard = document.getElementById("dashboard");
+        dashboard.innerHTML = "<p class='error'>تعذر تحميل لوحة الإحصائيات. تأكد من اتصال الإنترنت أو صحة الرابط.</p>";
+        dashboard.classList.remove("hidden");
       }
     }
-  function resetForm() {
-  document.getElementById("schoolCode").value = "";
-  document.getElementById("result").innerHTML = "";
-  document.getElementById("dashboard").classList.add("hidden");
-}
 
-function toggleDashboard() {
-  const dash = document.getElementById("dashboard");
-  dash.classList.toggle("hidden");
-}
+    function resetForm() {
+      document.getElementById("schoolCode").value = "";
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("dashboard").classList.add("hidden");
+    }
 
-</script>
+    function toggleDashboard() {
+      const dash = document.getElementById("dashboard");
+      dash.classList.toggle("hidden");
+    }
+  </script>
 </body>
 </html>
