@@ -94,8 +94,9 @@
 
   <div class="container">
     <label for="schoolCode">الرقم الإحصائي للمدرسة</label>
-    <input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">
+<input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">
     <button onclick="fetchData()">عرض البيانات</button>
+    <button id="resetButton" class="hidden" onclick="resetForm()">🔄 إدخال جديد</button>
 
     <div id="result" class="card"></div>
     <div id="dashboard" class="card hidden"></div>
@@ -106,7 +107,7 @@
 
     async function fetchData() {
       const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
-      const code = codeRaw.replace(/[^0-9]/g, "");
+      const code = codeRaw;
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
       document.getElementById("dashboard").classList.add("hidden");
@@ -123,6 +124,7 @@
         const data = await response.json();
 
         if (data.success) {
+          document.getElementById("resetButton").classList.remove("hidden");
           let banner = "";
           let actions = "";
           if (data.status) {
@@ -217,6 +219,12 @@
         console.error("خطأ في تحميل الإحصائيات:", error);
       }
     }
-  </script>
+  function resetForm() {
+  document.getElementById("schoolCode").value = "";
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("dashboard").classList.add("hidden");
+}
+
+</script>
 </body>
 </html>
