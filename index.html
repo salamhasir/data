@@ -94,7 +94,7 @@
 
   <div class="container">
     <label for="schoolCode">الرقم الإحصائي للمدرسة</label>
-    <input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">  oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+    <input id="schoolCode" type="text" placeholder="أدخل الرقم الإحصائي">
     <button onclick="fetchData()">عرض البيانات</button>
 
     <div id="result" class="card"></div>
@@ -106,13 +106,13 @@
 
     async function fetchData() {
       const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
-      const codeRaw = document.getElementById("schoolCode").value.trim().toLowerCase();
+      const code = codeRaw.replace(/[^0-9]/g, "");
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
       document.getElementById("dashboard").classList.add("hidden");
 
-      if (!code) {
-        resultDiv.innerHTML = "<p class='error'>الرجاء إدخال الرقم الإحصائي بشكل صحيح (أرقام فقط).</p>";
+      if (!code || code.length < 5) {
+        resultDiv.innerHTML = "<p class='error'>الرقم الإحصائي يبدو غير مكتمل. يرجى التحقق.</p>";
         return;
       }
 
